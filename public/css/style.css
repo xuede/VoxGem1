@@ -1,0 +1,64 @@
+body {
+  background-color: #00b5ff; /* Lighter blue background */
+}
+
+.swirling-circle {
+  border: 5px solid #f3f3f3; /* Light grey */
+  border-top: 5px solid #2ecc71; /* Listening mode color */
+  border-radius: 50%;
+  width: 120px; /* Increased size for better visibility and interaction */
+  height: 120px; /* Increased size for better visibility and interaction */
+  animation: none; /* Stop spinning in all modes */
+  opacity: 0.5; /* Dim the circle to indicate processing mode */
+  margin: 0 auto; /* Center the circle horizontally */
+  display: block; /* Ensure it's treated as a block-level element for margin to work */
+  transition: transform 0.5s ease;
+  cursor: pointer; /* Indicates the circle is clickable */
+  position: relative; /* Required for positioning the :before content */
+}
+
+/* Listening mode styles */
+.swirling-circle.listening-mode {
+  border-top-color: #2ecc71; /* Listening mode color */
+}
+
+/* Processing mode styles */
+.swirling-circle.processing-mode {
+  border-top-color: #f1c40f; /* Processing mode color */
+  opacity: 0.5; /* Dim the circle to indicate processing mode */
+}
+
+/* Speaking mode styles */
+.swirling-circle.speaking-mode {
+  border-top-color: #e74c3c; /* Speaking mode color */
+}
+
+/* Enhancements for a more dynamic and engaging voice interaction feature */
+.swirling-circle:hover {
+  box-shadow: 0 0 20px #3498db; /* Add glow effect on hover to indicate interactivity */
+}
+
+/* Additional visual cues for state transitions */
+.swirling-circle:before {
+  content: "Tap to Speak";
+  display: block;
+  position: absolute;
+  width: 100%;
+  top: 110%; /* Position below the circle */
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 14px; /* Make the text slightly larger for readability */
+  color: #f3f3f3;
+  text-align: center;
+}
+
+.swirling-circle.listening-mode:before {
+  content: "Listening...";
+}
+
+.swirling-circle.speaking-mode:before {
+  content: "Speaking...";
+}
+```
+
+To address the issues highlighted, we need to ensure the frontend properly connects to the backend for voice processing and updates the UI accordingly to reflect the correct state (listening, processing, speaking) without making any mistakes. The swirling circle's appearance will be adjusted to clearly differentiate it from a generic loading icon, making it evident that it represents a voice interaction state.

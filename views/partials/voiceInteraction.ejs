@@ -1,0 +1,162 @@
+<div class="voice-interaction">
+  <div class="swirling-circle" id="voice-activation-button">
+    <i class="fas fa-microphone"></i> <!-- Added microphone icon for better user interaction indication -->
+  </div>
+</div>
+
+<style>
+  .voice-interaction {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+  }
+
+  .swirling-circle {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, #007bff, #00bfff);
+    animation: swirl 2s linear infinite;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px; /* Adjusted for icon */
+    color: white; /* Color of the icon */
+  }
+
+  .swirling-circle:hover {
+    transform: scale(1.1);
+  }
+
+  .swirling-circle.listening {
+    background: linear-gradient(45deg, #28a745, #00ff7f);
+    animation: pulse 1s infinite;
+  }
+
+  @keyframes swirl {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes pulse {
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.2);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const swirlingCircle = document.querySelector('.swirling-circle');
+    let isListening = false;
+    let mediaRecorder = null;
+    let streamUsed = null;
+
+    swirlingCircle.addEventListener('click', function() {
+      // Prevent toggling listening mode directly after playing audio response
+      if (isListening && mediaRecorder && mediaRecorder.state === "inactive") {
+        return;
+      }
+      isListening = !isListening;
+      this.classList.toggle('listening');
+      console.log("Swirling circle clicked.");
+
+      if (isListening) {
+        console.log("Entering listening mode...");
+        startVoiceCapture();
+      } else {
+        console.log("Exiting listening mode...");
+        stopVoiceCapture();
+      }
+    });
+
+    function startVoiceCapture() {
+      navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(stream => {
+          streamUsed = stream;
+          mediaRecorder = new MediaRecorder(stream);
+          mediaRecorder.start();
+          console.log("Voice capture started.");
+          const audioChunks = [];
+
+          mediaRecorder.addEventListener("dataavailable", event => {
+            audioChunks.push(event.data);
+          });
+
+          mediaRecorder.addEventListener("stop", () => {
+            const audioBlob = new Blob(audioChunks);
+            sendVoiceToServer(audioBlob);
+          });
+
+          setTimeout(() => {
+            if (mediaRecorder.state === "recording") {
+              mediaRecorder.stop();
+              console.log("Voice capture auto-stopped after 5 seconds.");
+            }
+          }, 5000); // Stop recording after 5 seconds
+        })
+        .catch(error => {
+          console.error("Error accessing the microphone:", error.message);
+          console.error(error.stack);
+        });
+    }
+
+    function sendVoiceToServer(audioBlob) {
+      const formData = new FormData();
+      formData.append("voiceInput", audioBlob);
+
+      fetch("/api/voice", {
+        method: "POST",
+        body: formData,
+      })
+      .then(response => response.blob())
+      .then(data => {
+        playAudioResponse(data);
+      })
+      .catch(error => {
+        console.error("Error sending voice to server:", error.message);
+        console.error(error.stack);
+      });
+    }
+
+    function playAudioResponse(audioBlob) {
+      const audioUrl = URL.createObjectURL(audioBlob);
+      const audio = new Audio(audioUrl);
+      audio.play()
+        .then(() => {
+          console.log("Playing audio response.");
+          // Re-enter listening mode automatically after the response is played, with a delay to prevent immediate reactivation
+          setTimeout(() => {
+            if (!isListening) {
+              swirlingCircle.click();
+            }
+          }, 1000); // Delay to prevent immediate reactivation
+        })
+        .catch(error => {
+          console.error("Error playing audio response:", error.message);
+          console.error(error.stack);
+        });
+    }
+
+    function stopVoiceCapture() {
+      if (mediaRecorder && mediaRecorder.state === "recording") {
+        mediaRecorder.stop();
+        streamUsed.getTracks().forEach(track => track.stop());
+        console.log("Voice capture stopped.");
+      }
+    }
+  });
+</script>

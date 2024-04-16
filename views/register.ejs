@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include('partials/_head.ejs') %>
+  <body>
+<%- include('partials/_header.ejs') %>
+    <main role="main">
+      <div class="container mt-5">
+        <h2>Register</h2>
+        <form id="registerForm" action="/auth/register" method="POST">
+          <div class="mb-3">
+            <input type="text" name="username" placeholder="Username" required class="form-control">
+          </div>
+          <div class="mb-3">
+            <input type="password" name="password" placeholder="Password" required class="form-control">
+          </div>
+          <div class="mb-3">
+            <button type="button" id="registerButton" class="btn btn-primary mr-2">Register</button>
+            Already have an account? <a href="/auth/login">Login</a>
+          </div>
+        </form>
+      </div>
+    </main>
+    <script>
+      document.getElementById('registerButton').addEventListener('click', function(e) {
+        e.preventDefault();
+        const formData = new FormData(document.getElementById('registerForm'));
+        fetch('/auth/register', {
+          method: 'POST',
+          body: formData
+        }).then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            window.location.href = '/auth/login';
+          } else {
+            alert('Registration failed: ' + data.message);
+          }
+        }).catch(error => {
+          console.error('Error during registration:', error.message);
+          alert('Registration failed. Please check console for more details.');
+        });
+      });
+    </script>
+  </body>
+<%- include('partials/_footer.ejs') %>
+</html>
