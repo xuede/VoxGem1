@@ -59,6 +59,3 @@ body {
 .swirling-circle.speaking-mode:before {
   content: "Speaking...";
 }
-```
-
-To address the issues highlighted, we need to ensure the frontend properly connects to the backend for voice processing and updates the UI accordingly to reflect the correct state (listening, processing, speaking) without making any mistakes. The swirling circle's appearance will be adjusted to clearly differentiate it from a generic loading icon, making it evident that it represents a voice interaction state.
